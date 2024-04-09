@@ -15,8 +15,6 @@ if os.getenv('HBNB_TYPE_STORAGE') == "db":
 class BaseModel:
     """A base class for all hbnb models"""
     storage_engine = os.getenv('HBNB_TYPE_STORAGE')
-    if storage_engine is None:
-        storage_engine = "db"
 
     if storage_engine == "db":
         id = Column(String(60), primary_key=True)
@@ -39,12 +37,21 @@ class BaseModel:
             self.created_at = datetime.now()
             self.updated_at = datetime.now()
         else:
-            kwargs['updated_at'] = datetime.strptime(kwargs['updated_at'],
-                                                     '%Y-%m-%dT%H:%M:%S.%f')
-            kwargs['created_at'] = datetime.strptime(kwargs['created_at'],
-                                                     '%Y-%m-%dT%H:%M:%S.%f')
-            del kwargs['__class__']
-            self.__dict__.update(kwargs)
+            date_format = "%Y-%m-%dT%H:%M:%S.%f"
+            for key, value in kwargs.items():
+                if key != "__class__":
+                    if key == "created_at" or key == "updated_at":
+                        value = datetime.strptime(value, date_format)
+                    setattr(self, key, value)
+
+            identifier = {'id': str(uuid.uuid4()),
+                          'created_at': datetime.now(),
+                          'updated_at': datetime.now()
+                          }
+
+            for key, value in identifier.items():
+                if key not in kwargs.keys():
+                    setattr(self, key, value)
 
     def __str__(self):
         """Returns a string representation of the instance"""
