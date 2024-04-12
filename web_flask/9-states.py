@@ -11,22 +11,15 @@ app = Flask(__name__)
 
 @app.route('/states', strict_slashes=False)
 @app.route('/states/<id>', strict_slashes=False)
-def states_id(id=None):
-    states_list = storage.all(State)
-    cities_list = []
-    state_picked = []
+def states(id=None):
+    states = storage.all(State)
+    found = None
     if id:
-        for state in states_list.values():
+        for state in states.values():
             if state.id == id:
-                state_picked.append(state)
-                cities_list = sorted(state.cities, key=lambda s: s.name)
+                found = True
                 break
-    sorted_list = sorted(states_list.values(), key=lambda s: s.name)
-    return render_template('9-states.html',
-                           state_picked=state_picked,
-                           states_list=sorted_list,
-                           cities_list=cities_list,
-                           id=id)
+    return render_template('9-states.html', states=states, id=id, found=found)
 
 
 @app.route('/states_list', strict_slashes=False)
